@@ -1,0 +1,80 @@
+---
+- name: Create a network
+  community.docker.docker_network:
+    name: "{{ network }}_net"
+
+- name: Run berachain beacond container
+  community.docker.docker_container:
+    name: "{{ consensus_container_name }}"
+    image: "ghcr.io/berachain/beacon-kit:{{ consensus_container_version }}"
+    restart_policy: unless-stopped
+    state: started
+    restart: true
+    stop_timeout: 600
+    networks:
+      - name: "{{ network }}_net"
+    env: "{{ {'CHAIN_SPEC': consensus_chain_spec} if consensus_chain_spec is defined else {} }}"
+    ports:
+      # p2p
+      - "{{ custom_port_prefix }}56:{{ custom_port_prefix }}56"
+      # rpc for monitor (add additional lines for local network access if necessary)
+      - "127.0.0.1:{{ custom_port_prefix }}57:26657"
+      # beaconkit.node-api (add additional lines for local network access if necessary)
+      - "127.0.0.1:{{ custom_port_prefix }}30:3500"
+    volumes:
+      - "{{ folder }}/{{ consensus_container_name }}:/beacond"
+      - "{{ folder }}/jwtsecret:/jwtsecret:ro"
+      - /etc/localtime:/etc/localtime:ro
+    command:
+      - start
+      - --home=/beacond
+
+- name: Run berachain execution container
+  community.docker.docker_container:
+    name: "{{ execution_container_name }}"
+    image: ghcr.io/paradigmxyz/reth:{{ execution_container_version }}
+    restart_policy: unless-stopped
+    state: started
+    restart: true
+    pull: true
+    stop_timeout: 600
+    networks:
+      - name: "{{ network }}_net"
+    ports:
+      # p2p
+      - "{{ custom_port_prefix }}03:{{ custom_port_prefix }}03/tcp"
+      - "{{ custom_port_prefix }}03:{{ custom_port_prefix }}03/udp"
+      # rpc (add additional lines for local network access if necessary)
+      - 127.0.0.1:{{ custom_port_prefix }}45:8545
+      - 127.0.0.1:{{ custom_port_prefix }}46:8546
+    volumes:
+      - "{{ folder }}/{{ execution_container_name }}:/data"
+      - "{{ folder }}/jwtsecret:/jwtsecret:ro"
+      - /etc/localtime:/etc/localtime:ro
+    command:
+      - node
+      - --full
+      - --datadir=/data
+      - --config=/data/reth.toml
+      - --port={{ custom_port_prefix }}03
+      - --discovery.port={{ custom_port_prefix }}03
+      - --nat=extip:{{ public_ip.content | trim }}
+      - --chain=/data/eth-genesis.json
+      - --bootnodes={{ execution_bootnodes }}
+      - --trusted-peers={{ execution_bootnodes }}
+      # RPC & ws
+      - --http
+      - --http.addr=0.0.0.0
+      - --http.port=8545
+      - --http.corsdomain=*
+      - --http.api=eth,net,web3,txpool,debug
+      - --ws
+      - --ws.addr=0.0.0.0
+      - --ws.port=8546
+      - --ws.origins=*
+      # Auth to beacond
+      - --authrpc.addr=0.0.0.0
+      - --authrpc.port=8551
+      - --authrpc.jwtsecret=/jwtsecret
+      # Metrics
+      - --metrics=0.0.0.0:6060
