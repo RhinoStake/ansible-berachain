@@ -21,7 +21,7 @@ consensus_config_toml: https://raw.githubusercontent.com/berachain/beacon-kit/re
 
 # Execution container client & version
 execution_client: nethermind # Available options: reth, geth, nethermind
-execution_container_version: latest
+execution_container_version: 1.29.1
 execution_container_name: bera-{{ execution_client }}
 
 # Execution Engine Details
