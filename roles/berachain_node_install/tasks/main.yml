@@ -1,6 +1,9 @@
 ---
-- name: Initialize node
-  ansible.builtin.include_tasks: init_node.yml
+- name: Initialize beacond
+  ansible.builtin.include_tasks: init_consensus.yml
+
+- name: Initialize execution
+  ansible.builtin.include_tasks: init_execution.yml
 
 - name: Configure node
   ansible.builtin.include_tasks: configure_node.yml

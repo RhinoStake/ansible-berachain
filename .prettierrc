@@ -1,0 +1,9 @@
+{
+  "printWidth": 120,
+  "tabWidth": 2,
+  "useTabs": false,
+  "files.associations": {
+    "**/*.yml": "ansible",
+    "**/*.yaml": "ansible"
+  }
+}

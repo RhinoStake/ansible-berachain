@@ -1,0 +1,105 @@
+---
+# Install and init Execution client
+
+# Define execution container
+- name: Set execution container
+  ansible.builtin.set_fact:
+    execution_container_image: ghcr.io/paradigmxyz/reth
+  when: execution_client is not defined or execution_client == 'reth'
+
+- name: Set execution container
+  ansible.builtin.set_fact:
+    execution_container_image: ethereum/client-go
+  when: execution_client == 'geth'
+
+- name: Set execution container
+  ansible.builtin.set_fact:
+    execution_container_image: nethermind/nethermind
+  when: execution_client == 'nethermind'
+
+#
+## reth
+#
+- name: Initialize reth
+  when: execution_client is not defined or execution_client == 'reth'
+  block:
+    - name: Identify if execution is initialized
+      ansible.builtin.stat:
+        path: "{{ folder }}/{{ execution_container_name }}/reth.toml"
+      register: execution_initialized
+
+    - name: Initialize berachain execution node
+      when: not execution_initialized.stat.exists
+      block:
+        - name: Retrieve eth-genesis.json
+          ansible.builtin.get_url:
+            url: "{{ execution_genesis }}"
+            dest: "{{ folder }}/{{ execution_container_name }}/eth-genesis.json"
+            mode: "0644"
+
+        - name: Init berachain execution container
+          community.docker.docker_container:
+            name: "{{ execution_container_name }}-init"
+            image: "{{ execution_container_image }}:{{ execution_container_version }}"
+            state: started
+            pull: true
+            detach: false
+            cleanup: true
+            volumes:
+              - "{{ folder }}/{{ execution_container_name }}:/data"
+            command: init --datadir=/data --chain=/data/eth-genesis.json
+
+#
+## geth
+#
+- name: Initialize geth
+  when: execution_client == 'geth'
+  block:
+    - name: Identify if execution is initialized
+      ansible.builtin.stat:
+        path: "{{ folder }}/{{ execution_container_name }}/eth-genesis.json"
+      register: execution_initialized
+
+    - name: Initialize berachain execution node
+      when: not execution_initialized.stat.exists
+      block:
+        - name: Retrieve eth-genesis.json
+          ansible.builtin.get_url:
+            url: "{{ execution_genesis }}"
+            dest: "{{ folder }}/{{ execution_container_name }}/eth-genesis.json"
+            mode: "0644"
+
+        - name: Init berachain execution container
+          community.docker.docker_container:
+            name: "{{ execution_container_name }}-init"
+            image: "{{ execution_container_image }}:{{ execution_container_version }}"
+            state: started
+            pull: true
+            detach: false
+            cleanup: true
+            volumes:
+              - "{{ folder }}/{{ execution_container_name }}:/data"
+            command:
+              - init
+              - --datadir=/data
+              - --state.scheme=path
+              - --db.engine=pebble
+              - /data/eth-genesis.json
+
+#
+## nethermind
+#
+- name: Initialize nethermind
+  when: execution_client == 'nethermind'
+  block:
+    - name: Identify if execution is initialized
+      ansible.builtin.stat:
+        path: "{{ folder }}/{{ execution_container_name }}/eth-nether-genesis.json"
+      register: execution_initialized
+
+    - name: Retrieve eth-nether-genesis.json
+      when: not execution_initialized.stat.exists
+      ansible.builtin.get_url:
+        url: "{{ execution_genesis_nethermind }}"
+        dest: "{{ folder }}/{{ execution_container_name }}/eth-nether-genesis.json"
+        mode: "0644"

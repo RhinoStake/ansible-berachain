@@ -1,6 +1,5 @@
 ---
 # Install and run Berachain Beacond via Docker with init
-# Init standard reth client via Docker as execution client
 
 - name: Build base folder structure
   ansible.builtin.file:
@@ -33,6 +32,8 @@
         name: "{{ consensus_container_name }}-init"
         image: "ghcr.io/berachain/beacon-kit:{{ consensus_container_version }}"
         state: started
+        detach: false
+        cleanup: true
         volumes:
           - "{{ folder }}/{{ consensus_container_name }}:/beacond"
         env: "{{ {'CHAIN_SPEC': consensus_chain_spec} if consensus_chain_spec is defined else {} }}"
@@ -41,11 +42,6 @@
           - "{{ network }}"
           - --chain-id={{ consensus_chain_id }}
           - --home=/beacond
-
-    - name: Remove unneeded init container
-      community.docker.docker_container:
-        name: "{{ consensus_container_name }}-init"
-        state: absent
 
     - name: Replace genesis.json file
       become: true
@@ -62,33 +58,3 @@
         dest: "{{ folder }}/{{ consensus_container_name }}/kzg-trusted-setup.json"
         mode: "0644"
         force: true
-
-# Begin berachain execution engine initialization
-- name: Identify if execution is initialized
-  ansible.builtin.stat:
-    path: "{{ folder }}/{{ execution_container_name }}/reth.toml"
-  register: execution_initialized
-
-- name: Initialize berachain execution node
-  when: not execution_initialized.stat.exists
-  block:
-    - name: Retrieve eth-genesis.json
-      ansible.builtin.get_url:
-        url: "{{ execution_genesis }}"
-        dest: "{{ folder }}/{{ execution_container_name }}/eth-genesis.json"
-        mode: "0644"
-
-    - name: Init berachain execution container
-      community.docker.docker_container:
-        name: "{{ execution_container_name }}-init"
-        image: ghcr.io/paradigmxyz/reth:{{ execution_container_version }}
-        state: started
-        pull: true
-        volumes:
-          - "{{ folder }}/{{ execution_container_name }}:/data"
-        command: init --datadir=/data --chain=/data/eth-genesis.json
-
-    - name: Remove unneeded init container
-      community.docker.docker_container:
-        name: "{{ execution_container_name }}-init"
-        state: absent
