@@ -160,15 +160,18 @@
       - "{{ folder }}/jwtsecret:/jwtsecret:ro"
       - /etc/localtime:/etc/localtime:ro
     command:
-      - --data-dir=/data
+      - --datadir=/data
       - --Init.ChainSpecPath=/data/eth-nether-genesis.json
       - --Network.DiscoveryPort={{ custom_port_prefix }}03
       - --Network.P2PPort={{ custom_port_prefix }}03
       - --Network.Bootnodes={{ execution_bootnodes }}
+      - --Network.ExternalIp={{ public_ip.content | trim }}
       - --JsonRpc.Enabled=true
       - --JsonRpc.Host=0.0.0.0
       - --JsonRpc.Port=8545
-      - --JsonRpc.EnabledModules=eth,net,web3,txpool,debug
       - --JsonRpc.JwtSecretFile=/jwtsecret
       - --JsonRpc.EnginePort=8551
       - --JsonRpc.EngineHost=0.0.0.0
+      - --Sync.SnapSync=false
+      - --Sync.FastSync=false
+      - --HealthChecks.Enabled=true
