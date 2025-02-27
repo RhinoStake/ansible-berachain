@@ -3,32 +3,6 @@
   community.docker.docker_network:
     name: "{{ network }}_net"
 
-- name: Run berachain beacond container
-  community.docker.docker_container:
-    name: "{{ consensus_container_name }}"
-    image: "ghcr.io/berachain/beacon-kit:{{ consensus_container_version }}"
-    restart_policy: unless-stopped
-    state: started
-    restart: true
-    stop_timeout: 600
-    networks:
-      - name: "{{ network }}_net"
-    env: "{{ {'CHAIN_SPEC': consensus_chain_spec} if consensus_chain_spec is defined else {} }}"
-    ports:
-      # p2p
-      - "{{ custom_port_prefix }}56:{{ custom_port_prefix }}56"
-      # rpc for monitor (add additional lines for local network access if necessary)
-      - "127.0.0.1:{{ custom_port_prefix }}57:26657"
-      # beaconkit.node-api (add additional lines for local network access if necessary)
-      - "127.0.0.1:{{ custom_port_prefix }}30:3500"
-    volumes:
-      - "{{ folder }}/{{ consensus_container_name }}:/beacond"
-      - "{{ folder }}/jwtsecret:/jwtsecret:ro"
-      - /etc/localtime:/etc/localtime:ro
-    command:
-      - start
-      - --home=/beacond
-
 #
 ## reth
 #
@@ -175,3 +149,36 @@
       - --Sync.SnapSync=false
       - --Sync.FastSync=false
       - --HealthChecks.Enabled=true
+
+- name: Sleep for 10 seconds to allow EL to start
+  ansible.builtin.pause:
+    seconds: 10
+
+#
+## beacond
+#
+- name: Run berachain beacond container
+  community.docker.docker_container:
+    name: "{{ consensus_container_name }}"
+    image: "ghcr.io/berachain/beacon-kit:{{ consensus_container_version }}"
+    restart_policy: unless-stopped
+    state: started
+    restart: true
+    stop_timeout: 600
+    networks:
+      - name: "{{ network }}_net"
+    env: "{{ {'CHAIN_SPEC': consensus_chain_spec} if consensus_chain_spec is defined else {} }}"
+    ports:
+      # p2p
+      - "{{ custom_port_prefix }}56:{{ custom_port_prefix }}56"
+      # rpc for monitor (add additional lines for local network access if necessary)
+      - "127.0.0.1:{{ custom_port_prefix }}57:26657"
+      # beaconkit.node-api (add additional lines for local network access if necessary)
+      - "127.0.0.1:{{ custom_port_prefix }}30:3500"
+    volumes:
+      - "{{ folder }}/{{ consensus_container_name }}:/beacond"
+      - "{{ folder }}/jwtsecret:/jwtsecret:ro"
+      - /etc/localtime:/etc/localtime:ro
+    command:
+      - start
+      - --home=/beacond
