@@ -3,157 +3,157 @@
   community.docker.docker_network:
     name: "{{ network }}_net"
 
-#
-## reth
-#
-- name: Run berachain reth execution container
-  when: execution_client is not defined or execution_client == 'reth'
-  community.docker.docker_container:
-    name: "{{ execution_container_name }}"
-    image: "{{ execution_container_image }}:{{ execution_container_version }}"
-    restart_policy: unless-stopped
-    state: started
-    restart: true
-    pull: true
-    stop_timeout: 600
-    networks:
-      - name: "{{ network }}_net"
-    ports:
-      # p2p
-      - "{{ custom_port_prefix }}03:{{ custom_port_prefix }}03/tcp"
-      - "{{ custom_port_prefix }}03:{{ custom_port_prefix }}03/udp"
-      # rpc (add additional lines for local network access if necessary)
-      - 127.0.0.1:{{ custom_port_prefix }}45:8545
-      - 127.0.0.1:{{ custom_port_prefix }}46:8546
-    volumes:
-      - "{{ folder }}/{{ execution_container_name }}:/data"
-      - "{{ folder }}/jwtsecret:/jwtsecret:ro"
-      - /etc/localtime:/etc/localtime:ro
-    command:
-      - node
-      - --full
-      - --datadir=/data
-      - --config=/data/reth.toml
-      - --port={{ custom_port_prefix }}03
-      - --discovery.port={{ custom_port_prefix }}03
-      - --nat=extip:{{ public_ip.content | trim }}
-      - --chain=/data/eth-genesis.json
-      - --bootnodes={{ execution_bootnodes }}
-      - --trusted-peers={{ execution_bootnodes }}
-      # RPC & ws
-      - --http
-      - --http.addr=0.0.0.0
-      - --http.port=8545
-      - --http.corsdomain=*
-      - --http.api=eth,net,web3,txpool,debug
-      - --ws
-      - --ws.addr=0.0.0.0
-      - --ws.port=8546
-      - --ws.origins=*
-      # Auth to beacond
-      - --authrpc.addr=0.0.0.0
-      - --authrpc.port=8551
-      - --authrpc.jwtsecret=/jwtsecret
-      # Metrics
-      - --metrics=0.0.0.0:6060
+- name: Run the execution layer
+  register: execution_container
+  block:
+    #
+    ## reth
+    #
+    - name: Run berachain reth execution container
+      when: execution_client is not defined or execution_client == 'reth'
+      community.docker.docker_container:
+        name: "{{ execution_container_name }}"
+        image: "{{ execution_container_image }}:{{ execution_container_version }}"
+        restart_policy: unless-stopped
+        state: started
+        pull: true
+        stop_timeout: 600
+        networks:
+          - name: "{{ network }}_net"
+        ports:
+          # p2p
+          - "{{ custom_port_prefix }}03:{{ custom_port_prefix }}03/tcp"
+          - "{{ custom_port_prefix }}03:{{ custom_port_prefix }}03/udp"
+          # rpc (add additional lines for local network access if necessary)
+          - 127.0.0.1:{{ custom_port_prefix }}45:8545
+          - 127.0.0.1:{{ custom_port_prefix }}46:8546
+        volumes:
+          - "{{ folder }}/{{ execution_container_name }}:/data"
+          - "{{ folder }}/jwtsecret:/jwtsecret:ro"
+          - /etc/localtime:/etc/localtime:ro
+        command:
+          - node
+          - --full
+          - --datadir=/data
+          - --config=/data/reth.toml
+          - --port={{ custom_port_prefix }}03
+          - --discovery.port={{ custom_port_prefix }}03
+          - --nat=extip:{{ public_ip.content | trim }}
+          - --chain=/data/eth-genesis.json
+          - --bootnodes={{ execution_bootnodes }}
+          - --trusted-peers={{ execution_bootnodes }}
+          # RPC & ws
+          - --http
+          - --http.addr=0.0.0.0
+          - --http.port=8545
+          - --http.corsdomain=*
+          - --http.api=eth,net,web3,txpool,debug
+          - --ws
+          - --ws.addr=0.0.0.0
+          - --ws.port=8546
+          - --ws.origins=*
+          # Auth to beacond
+          - --authrpc.addr=0.0.0.0
+          - --authrpc.port=8551
+          - --authrpc.jwtsecret=/jwtsecret
+          # Metrics
+          - --metrics=0.0.0.0:6060
 
-#
-## geth
-#
-- name: Run berachain geth execution container
-  when: execution_client == 'geth'
-  community.docker.docker_container:
-    name: "{{ execution_container_name }}"
-    image: "{{ execution_container_image }}:{{ execution_container_version }}"
-    restart_policy: unless-stopped
-    state: started
-    restart: true
-    pull: true
-    stop_timeout: 600
-    networks:
-      - name: "{{ network }}_net"
-    ports:
-      # p2p
-      - "{{ custom_port_prefix }}03:{{ custom_port_prefix }}03/tcp"
-      - "{{ custom_port_prefix }}03:{{ custom_port_prefix }}03/udp"
-      # rpc (add additional lines for local network access if necessary)
-      - 127.0.0.1:{{ custom_port_prefix }}45:8545
-      - 127.0.0.1:{{ custom_port_prefix }}46:8546
-    volumes:
-      - "{{ folder }}/{{ execution_container_name }}:/data"
-      - "{{ folder }}/jwtsecret:/jwtsecret:ro"
-      - /etc/localtime:/etc/localtime:ro
-    command:
-      - --db.engine=pebble
-      - --state.scheme=path
-      - --datadir=/data
-      - --port={{ custom_port_prefix }}03
-      - --discovery.port={{ custom_port_prefix }}03
-      - --nat=extip:{{ public_ip.content | trim }}
-      - --bootnodes={{ execution_bootnodes }}
-      # RPC & ws
-      - --http
-      - --http.addr=0.0.0.0
-      - --http.port=8545
-      - --http.corsdomain=*
-      - --http.api=eth,net,web3,txpool,debug
-      - --ws
-      - --ws.addr=0.0.0.0
-      - --ws.port=8546
-      - --ws.origins=*
-      # Auth to beacond
-      - --authrpc.addr=0.0.0.0
-      - --authrpc.port=8551
-      - --authrpc.vhosts=*
-      - --authrpc.jwtsecret=/jwtsecret
+    #
+    ## geth
+    #
+    - name: Run berachain geth execution container
+      when: execution_client == 'geth'
+      community.docker.docker_container:
+        name: "{{ execution_container_name }}"
+        image: "{{ execution_container_image }}:{{ execution_container_version }}"
+        restart_policy: unless-stopped
+        state: started
+        pull: true
+        stop_timeout: 600
+        networks:
+          - name: "{{ network }}_net"
+        ports:
+          # p2p
+          - "{{ custom_port_prefix }}03:{{ custom_port_prefix }}03/tcp"
+          - "{{ custom_port_prefix }}03:{{ custom_port_prefix }}03/udp"
+          # rpc (add additional lines for local network access if necessary)
+          - 127.0.0.1:{{ custom_port_prefix }}45:8545
+          - 127.0.0.1:{{ custom_port_prefix }}46:8546
+        volumes:
+          - "{{ folder }}/{{ execution_container_name }}:/data"
+          - "{{ folder }}/jwtsecret:/jwtsecret:ro"
+          - /etc/localtime:/etc/localtime:ro
+        command:
+          - --db.engine=pebble
+          - --state.scheme=path
+          - --datadir=/data
+          - --port={{ custom_port_prefix }}03
+          - --discovery.port={{ custom_port_prefix }}03
+          - --nat=extip:{{ public_ip.content | trim }}
+          - --bootnodes={{ execution_bootnodes }}
+          # RPC & ws
+          - --http
+          - --http.addr=0.0.0.0
+          - --http.port=8545
+          - --http.corsdomain=*
+          - --http.api=eth,net,web3,txpool,debug
+          - --ws
+          - --ws.addr=0.0.0.0
+          - --ws.port=8546
+          - --ws.origins=*
+          # Auth to beacond
+          - --authrpc.addr=0.0.0.0
+          - --authrpc.port=8551
+          - --authrpc.vhosts=*
+          - --authrpc.jwtsecret=/jwtsecret
 
-#
-## nethermind
-#
-- name: Run berachain nethermind execution container
-  when: execution_client == 'nethermind'
-  community.docker.docker_container:
-    name: "{{ execution_container_name }}"
-    image: "{{ execution_container_image }}:{{ execution_container_version }}"
-    restart_policy: unless-stopped
-    state: started
-    restart: true
-    pull: true
-    stop_timeout: 600
-    networks:
-      - name: "{{ network }}_net"
-    ports:
-      # p2p
-      - "{{ custom_port_prefix }}03:{{ custom_port_prefix }}03/tcp"
-      - "{{ custom_port_prefix }}03:{{ custom_port_prefix }}03/udp"
-      # rpc (add additional lines for local network access if necessary)
-      - 127.0.0.1:{{ custom_port_prefix }}45:8545
-      - 127.0.0.1:{{ custom_port_prefix }}46:8546
-    volumes:
-      - "{{ folder }}/{{ execution_container_name }}:/data"
-      - "{{ folder }}/jwtsecret:/jwtsecret:ro"
-      - /etc/localtime:/etc/localtime:ro
-    command:
-      - --datadir=/data
-      - --Init.ChainSpecPath=/data/eth-nether-genesis.json
-      - --Network.DiscoveryPort={{ custom_port_prefix }}03
-      - --Network.P2PPort={{ custom_port_prefix }}03
-      - --Network.Bootnodes={{ execution_bootnodes }}
-      - --Network.ExternalIp={{ public_ip.content | trim }}
-      - --JsonRpc.Enabled=true
-      - --JsonRpc.Host=0.0.0.0
-      - --JsonRpc.Port=8545
-      - --JsonRpc.JwtSecretFile=/jwtsecret
-      - --JsonRpc.EnginePort=8551
-      - --JsonRpc.EngineHost=0.0.0.0
-      - --Sync.SnapSync=false
-      - --Sync.FastSync=false
-      - --HealthChecks.Enabled=true
+    #
+    ## nethermind
+    #
+    - name: Run berachain nethermind execution container
+      when: execution_client == 'nethermind'
+      community.docker.docker_container:
+        name: "{{ execution_container_name }}"
+        image: "{{ execution_container_image }}:{{ execution_container_version }}"
+        restart_policy: unless-stopped
+        state: started
+        pull: true
+        stop_timeout: 600
+        networks:
+          - name: "{{ network }}_net"
+        ports:
+          # p2p
+          - "{{ custom_port_prefix }}03:{{ custom_port_prefix }}03/tcp"
+          - "{{ custom_port_prefix }}03:{{ custom_port_prefix }}03/udp"
+          # rpc (add additional lines for local network access if necessary)
+          - 127.0.0.1:{{ custom_port_prefix }}45:8545
+          - 127.0.0.1:{{ custom_port_prefix }}46:8546
+        volumes:
+          - "{{ folder }}/{{ execution_container_name }}:/data"
+          - "{{ folder }}/jwtsecret:/jwtsecret:ro"
+          - /etc/localtime:/etc/localtime:ro
+        command:
+          - --datadir=/data
+          - --Init.ChainSpecPath=/data/eth-nether-genesis.json
+          - --Network.DiscoveryPort={{ custom_port_prefix }}03
+          - --Network.P2PPort={{ custom_port_prefix }}03
+          - --Network.Bootnodes={{ execution_bootnodes }}
+          - --Network.ExternalIp={{ public_ip.content | trim }}
+          - --JsonRpc.Enabled=true
+          - --JsonRpc.Host=0.0.0.0
+          - --JsonRpc.Port=8545
+          - --JsonRpc.JwtSecretFile=/jwtsecret
+          - --JsonRpc.EnginePort=8551
+          - --JsonRpc.EngineHost=0.0.0.0
+          - --Sync.SnapSync=false
+          - --Sync.FastSync=false
+          - --HealthChecks.Enabled=true
 
-- name: Sleep for 10 seconds to allow EL to start
+- name: Sleep for 15 seconds to allow EL to start
+  when: execution_container is changed
   ansible.builtin.pause:
-    seconds: 10
-
+    seconds: 15
 #
 ## beacond
 #
