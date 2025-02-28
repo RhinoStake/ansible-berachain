@@ -40,6 +40,8 @@
           }
         - { section: "p2p", key: "seeds", value: '"{{ consensus_seeds | default("") }}"' }
         - { section: "p2p", key: "persistent_peers", value: '"{{ consensus_persistent_peers | default("") }}"' }
+        - { section: "p2p", key: "max_num_inbound_peers", value: "37" }
+        - { section: "p2p", key: "max_num_outbound_peers", value: "27" }
         - { section: "rpc", key: "laddr", value: '"tcp://0.0.0.0:26657"' }
 
     # Configure app.toml components:
