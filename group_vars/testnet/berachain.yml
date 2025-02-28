@@ -1,11 +1,15 @@
 # Berachain Network Consensus (halo) and Execution (geth) clients
+# bArtio
 network: berachain
 folder: "/home/{{ ansible_user }}/docker/{{ network }}"
 custom_port_prefix: 254
 
-# Consensus Engine Details
+# Consensus container client & version
+consensus_container_name: bera-beacond
 consensus_version: v0.2.0-alpha.8
-consensus_repo: https://github.com/berachain/beacon-kit.git
+consensus_container_version: "{{ consensus_version }}"
+
+# Consensus Engine Details
 consensus_seeds: "2f8ce8462cddc9ae865ab8ec1f05cc286f07c671@34.152.0.40:26656,3037b09eaa2eed5cd1b1d3d733ab8468bf4910ee@35.203.36.128:26656,add35d414bee9c0be3b10bcf8fbc12a059eb9a3b@35.246.180.53:26656"
 consensus_persistent_peers: ""
 consensus_chain_id: bartio-beacon-80084
@@ -13,16 +17,15 @@ consensus_genesis: https://raw.githubusercontent.com/berachain/beacon-kit/refs/h
 consensus_kzg_trusted: https://raw.githubusercontent.com/berachain/beacon-kit/main/testing/networks/80084/kzg-trusted-setup.json
 consensus_app_toml: https://raw.githubusercontent.com/berachain/beacon-kit/refs/heads/main/testing/networks/80084/app.toml
 consensus_config_toml: https://raw.githubusercontent.com/berachain/beacon-kit/refs/heads/main/testing/networks/80084/config.toml
-# consensus_fee_recipient: ""
+#
+# suggested_fee_recipient:
 
-# Consensus container
-consensus_container_name: bera-beacond
-consensus_container_version: "{{ consensus_version }}"
+# Execution container client & version
+execution_client: reth # Available options: reth, geth, nethermind
+execution_container_version: 1.1.4
+execution_container_name: bera-{{ execution_client }}
 
 # Execution Engine Details
 execution_genesis: https://raw.githubusercontent.com/berachain/beacon-kit/main/testing/networks/80084/eth-genesis.json
 execution_chain_id: 80084
 execution_bootnodes: enode://0401e494dbd0c84c5c0f72adac5985d2f2525e08b68d448958aae218f5ac8198a80d1498e0ebec2ce38b1b18d6750f6e61a56b4614c5a6c6cf0981c39aed47dc@34.159.32.127:30303,enode://9b6c1eb143c9e3af0c7283262a9a38fe8bf844114b1f304673c2ac1c23e6bccfdaa8f4e9cb8c460bded495933fd92eeff30e6ab2e0538b56e249beea2c512906@35.234.88.149:30303
-# Execution container
-execution_container_name: bera-reth
-execution_container_version: latest
