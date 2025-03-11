@@ -1,3 +1,4 @@
 .DS_Store
 ansible-berachain.code-workspace
 inventory.ini
+.lock

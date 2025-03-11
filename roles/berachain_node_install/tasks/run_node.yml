@@ -40,8 +40,8 @@
           - --discovery.port={{ custom_port_prefix }}03
           - --nat=extip:{{ public_ip.content | trim }}
           - --chain=/data/eth-genesis.json
-          - --bootnodes={{ execution_bootnodes }}
-          - --trusted-peers={{ execution_bootnodes }}
+          - --bootnodes={{ el_peers.content | trim }}
+          - --trusted-peers={{ el_peers.content | trim }}
           # RPC & ws
           - --http
           - --http.addr=0.0.0.0

@@ -1,9 +1,9 @@
 ---
-- name: Berachain bArtio Install and Init
+- name: Berachain Bepolia Install and Init
   hosts: berachain-testnet
   gather_facts: true
   vars_files:
-    - "group_vars/testnet/berachain.yml"
+    - "group_vars/testnet/berachain_bepolia.yml"
 
   roles:
     - berachain_node_install
