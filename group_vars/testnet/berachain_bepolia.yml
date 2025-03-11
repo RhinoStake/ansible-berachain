@@ -1,0 +1,32 @@
+# Berachain Network Consensus (halo) and Execution (reth, geth or nethermind) clients for Berachain Testnet (Bepolia)
+#
+network: berachain
+folder: "/home/{{ ansible_user }}/docker/{{ network }}"
+custom_port_prefix: 254
+
+# Consensus container client & version
+consensus_container_name: bera-beacond
+consensus_version: v1.1.3
+consensus_container_version: "{{ consensus_version }}"
+
+# Consensus Engine Details
+consensus_seeds: "" # Optional, defaults exist in config.toml
+consensus_persistent_peers: "" # Optional, defaults exist in config.toml
+consensus_chain_id: testnet-beacon-80069
+consensus_genesis: https://raw.githubusercontent.com/berachain/beacon-kit/refs/heads/main/testing/networks/80069/genesis.json
+consensus_kzg_trusted: https://raw.githubusercontent.com/berachain/beacon-kit/main/testing/networks/80069/kzg-trusted-setup.json
+consensus_app_toml: https://raw.githubusercontent.com/berachain/beacon-kit/refs/heads/main/testing/networks/80069/app.toml
+consensus_config_toml: https://raw.githubusercontent.com/berachain/beacon-kit/refs/heads/main/testing/networks/80069/config.toml
+#
+# suggested_fee_recipient:
+
+# Execution container client & version
+execution_client: reth # Available options: reth, geth, nethermind
+execution_container_version: 1.1.5
+execution_container_name: bera-{{ execution_client }}
+
+# Execution Engine Details
+execution_genesis: https://raw.githubusercontent.com/berachain/beacon-kit/main/testing/networks/80069/eth-genesis.json
+execution_genesis_nethermind: https://raw.githubusercontent.com/berachain/beacon-kit/refs/heads/main/testing/networks/80069/eth-nether-genesis.json
+execution_chain_id: 80069
+execution_bootnodes: https://raw.githubusercontent.com/berachain/beacon-kit/refs/heads/main/testing/networks/80069/el-peers.txt
