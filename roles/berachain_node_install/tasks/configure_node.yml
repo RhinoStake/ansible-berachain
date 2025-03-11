@@ -38,11 +38,27 @@
             key: "external_address",
             value: '"{{ public_ip.content | trim }}:{{ custom_port_prefix }}56"',
           }
-        - { section: "p2p", key: "seeds", value: '"{{ consensus_seeds | default("") }}"' }
-        - { section: "p2p", key: "persistent_peers", value: '"{{ consensus_persistent_peers | default("") }}"' }
         - { section: "p2p", key: "max_num_inbound_peers", value: "37" }
         - { section: "p2p", key: "max_num_outbound_peers", value: "27" }
         - { section: "rpc", key: "laddr", value: '"tcp://0.0.0.0:26657"' }
+
+    - name: Update seeds in config.toml
+      community.general.ini_file:
+        path: "{{ folder }}/{{ consensus_container_name }}/config/config.toml"
+        section: "p2p"
+        option: "seeds"
+        value: '"{{ consensus_seeds }}'
+        create: false
+      when: consensus_seeds is defined and consensus_seeds | length > 0
+
+    - name: Update persistent_peers in config.toml
+      community.general.ini_file:
+        path: "{{ folder }}/{{ consensus_container_name }}/config/config.toml"
+        section: "p2p"
+        option: "persistent_peers"
+        value: '"{{ consensus_persistent_peers }}'
+        create: false
+      when: consensus_persistent_peers is defined and consensus_persistent_peers | length > 0
 
     # Configure app.toml components:
     - name: Update options in app.toml
@@ -66,3 +82,13 @@
         - { section: "beacon-kit.block-store-service", key: "enabled", value: '"false"' }
         - { section: "beacon-kit.node-api", key: "enabled", value: '"true"' }
         - { section: "beacon-kit.node-api", key: "address", value: '"0.0.0.0:3500"' }
+
+#
+## Download EL peers list
+#
+- name: Download EL peers from source
+  ansible.builtin.uri:
+    url: "{{ execution_bootnodes }}"
+    status_code: 200
+    return_content: true
+  register: el_peers
