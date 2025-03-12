@@ -58,6 +58,9 @@
           - --authrpc.jwtsecret=/jwtsecret
           # Metrics
           - --metrics=0.0.0.0:6060
+          # Necessary for beacond
+          - --engine.persistence-threshold=0
+          - --engine.memory-block-buffer-target=0
 
     #
     ## geth
