@@ -1,0 +1,5 @@
+---
+- name: Wait for execution layer to start
+  ansible.builtin.pause:
+    seconds: 15
+  listen: "execution layer started"
