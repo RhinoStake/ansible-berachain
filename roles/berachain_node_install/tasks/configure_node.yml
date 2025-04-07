@@ -33,11 +33,7 @@
       loop:
         - { section: "", key: "moniker", value: '"{{ network }}"' }
         - { section: "p2p", key: "laddr", value: '"tcp://0.0.0.0:{{ custom_port_prefix }}56"' }
-        - {
-            section: "p2p",
-            key: "external_address",
-            value: '"{{ public_ip.content | trim }}:{{ custom_port_prefix }}56"',
-          }
+        - { section: "p2p", key: "external_address", value: '"{{ public_ip.content | trim }}:{{ custom_port_prefix }}56"' }
         - { section: "p2p", key: "max_num_inbound_peers", value: "40" }
         - { section: "p2p", key: "max_num_outbound_peers", value: "10" }
         - { section: "rpc", key: "laddr", value: '"tcp://0.0.0.0:26657"' }
@@ -74,11 +70,7 @@
         - { section: "beacon-kit.engine", key: "rpc-dial-url", value: '"http://{{ execution_container_name }}:8551"' }
         - { section: "beacon-kit.engine", key: "jwt-secret-path", value: '"/jwtsecret"' }
         - { section: "beacon-kit.kzg", key: "trusted-setup-path", value: '"/beacond/kzg-trusted-setup.json"' }
-        - {
-            section: "beacon-kit.payload-builder",
-            key: "suggested-fee-recipient",
-            value: '"{{ suggested_fee_recipient | default("0x0000000000000000000000000000000000000000") }}"',
-          }
+        - { section: "beacon-kit.payload-builder", key: "suggested-fee-recipient", value: '"{{ suggested_fee_recipient | default("0x0000000000000000000000000000000000000000") }}"' }
         - { section: "beacon-kit.block-store-service", key: "enabled", value: '"false"' }
         - { section: "beacon-kit.node-api", key: "enabled", value: '"true"' }
         - { section: "beacon-kit.node-api", key: "address", value: '"0.0.0.0:3500"' }
