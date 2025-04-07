@@ -38,8 +38,8 @@
             key: "external_address",
             value: '"{{ public_ip.content | trim }}:{{ custom_port_prefix }}56"',
           }
-        - { section: "p2p", key: "max_num_inbound_peers", value: "37" }
-        - { section: "p2p", key: "max_num_outbound_peers", value: "27" }
+        - { section: "p2p", key: "max_num_inbound_peers", value: "40" }
+        - { section: "p2p", key: "max_num_outbound_peers", value: "10" }
         - { section: "rpc", key: "laddr", value: '"tcp://0.0.0.0:26657"' }
 
     - name: Update seeds in config.toml
