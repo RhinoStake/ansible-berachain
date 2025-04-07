@@ -2,6 +2,7 @@
   "printWidth": 160,
   "tabWidth": 2,
   "useTabs": false,
+  "proseWrap": "always",
   "files.associations": {
     "**/*.yml": "ansible",
     "**/*.yaml": "ansible"

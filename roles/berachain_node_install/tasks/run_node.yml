@@ -153,11 +153,11 @@
           - --Sync.FastSync=false
           - --HealthChecks.Enabled=true
 
-- name: Sleep for 15 seconds to allow EL to start
-  when: execution_container is changed
-  ansible.builtin.pause:
-    seconds: 15
-  changed_when: false
+- name: Notify handler if execution container changed
+  ansible.builtin.meta: flush_handlers
+  changed_when: execution_container is changed
+  notify: Wait for execution layer to start
+
 #
 ## beacond
 #

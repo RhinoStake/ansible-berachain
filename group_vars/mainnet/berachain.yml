@@ -1,6 +1,7 @@
+---
 # Berachain Network Consensus (halo) and Execution (geth) clients
 network: berachain
-folder: "/home/{{ ansible_user}}/docker/{{ network }}"
+folder: "/home/{{ ansible_user }}/docker/{{ network }}"
 custom_port_prefix: 254
 
 # Consensus container client & version

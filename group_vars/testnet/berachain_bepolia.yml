@@ -1,3 +1,4 @@
+---
 # Berachain Network Consensus (halo) and Execution (reth, geth or nethermind) clients for Berachain Testnet (Bepolia)
 #
 network: berachain
