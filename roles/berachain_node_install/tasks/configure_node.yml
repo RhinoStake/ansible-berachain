@@ -70,7 +70,11 @@
         - { section: "beacon-kit.engine", key: "rpc-dial-url", value: '"http://{{ execution_container_name }}:8551"' }
         - { section: "beacon-kit.engine", key: "jwt-secret-path", value: '"/jwtsecret"' }
         - { section: "beacon-kit.kzg", key: "trusted-setup-path", value: '"/beacond/kzg-trusted-setup.json"' }
-        - { section: "beacon-kit.payload-builder", key: "suggested-fee-recipient", value: '"{{ suggested_fee_recipient | default("0x0000000000000000000000000000000000000000") }}"' }
+        - {
+            section: "beacon-kit.payload-builder",
+            key: "suggested-fee-recipient",
+            value: '"{{ suggested_fee_recipient | default("0x0000000000000000000000000000000000000000") }}"',
+          }
         - { section: "beacon-kit.block-store-service", key: "enabled", value: '"false"' }
         - { section: "beacon-kit.node-api", key: "enabled", value: '"true"' }
         - { section: "beacon-kit.node-api", key: "address", value: '"0.0.0.0:3500"' }
