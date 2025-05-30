@@ -28,15 +28,16 @@
         path: "{{ folder }}/{{ execution_container_name }}/reth.toml"
       register: execution_initialized
 
+    - name: Retrieve latest eth-genesis.json
+      ansible.builtin.get_url:
+        url: "{{ execution_genesis }}"
+        dest: "{{ folder }}/{{ execution_container_name }}/eth-genesis.json"
+        mode: "0644"
+        force: true
+
     - name: Initialize berachain execution node
       when: not execution_initialized.stat.exists
       block:
-        - name: Retrieve eth-genesis.json
-          ansible.builtin.get_url:
-            url: "{{ execution_genesis }}"
-            dest: "{{ folder }}/{{ execution_container_name }}/eth-genesis.json"
-            mode: "0644"
-
         - name: Init berachain execution container
           community.docker.docker_container:
             name: "{{ execution_container_name }}-init"
@@ -45,6 +46,7 @@
             pull: true
             detach: false
             cleanup: true
+            auto_remove: true
             volumes:
               - "{{ folder }}/{{ execution_container_name }}:/data"
             command: init --datadir=/data --chain=/data/eth-genesis.json
@@ -55,36 +57,36 @@
 - name: Initialize geth
   when: execution_client == 'geth'
   block:
-    - name: Identify if execution is initialized
-      ansible.builtin.stat:
-        path: "{{ folder }}/{{ execution_container_name }}/eth-genesis.json"
-      register: execution_initialized
+    # Can safely re-init geth on all runs
+    - name: Retrieve latest eth-genesis.json
+      ansible.builtin.get_url:
+        url: "{{ execution_genesis }}"
+        dest: "{{ folder }}/{{ execution_container_name }}/eth-genesis.json"
+        mode: "0644"
+        force: true
 
-    - name: Initialize berachain execution node
-      when: not execution_initialized.stat.exists
-      block:
-        - name: Retrieve eth-genesis.json
-          ansible.builtin.get_url:
-            url: "{{ execution_genesis }}"
-            dest: "{{ folder }}/{{ execution_container_name }}/eth-genesis.json"
-            mode: "0644"
+    - name: Stop existing execution container
+      community.docker.docker_container:
+        name: "{{ execution_container_name }}"
+        state: absent
 
-        - name: Init berachain execution container
-          community.docker.docker_container:
-            name: "{{ execution_container_name }}-init"
-            image: "{{ execution_container_image }}:{{ execution_container_version }}"
-            state: started
-            pull: true
-            detach: false
-            cleanup: true
-            volumes:
-              - "{{ folder }}/{{ execution_container_name }}:/data"
-            command:
-              - init
-              - --datadir=/data
-              - --state.scheme=path
-              - --db.engine=pebble
-              - /data/eth-genesis.json
+    - name: Init berachain execution container
+      community.docker.docker_container:
+        name: "{{ execution_container_name }}-init"
+        image: "{{ execution_container_image }}:{{ execution_container_version }}"
+        state: started
+        pull: true
+        detach: false
+        cleanup: true
+        auto_remove: true
+        volumes:
+          - "{{ folder }}/{{ execution_container_name }}:/data"
+        command:
+          - init
+          - --datadir=/data
+          - --state.scheme=path
+          - --db.engine=pebble
+          - /data/eth-genesis.json
 
 #
 ## nethermind
@@ -92,14 +94,9 @@
 - name: Initialize nethermind
   when: execution_client == 'nethermind'
   block:
-    - name: Identify if execution is initialized
-      ansible.builtin.stat:
-        path: "{{ folder }}/{{ execution_container_name }}/eth-nether-genesis.json"
-      register: execution_initialized
-
     - name: Retrieve eth-nether-genesis.json
-      when: not execution_initialized.stat.exists
       ansible.builtin.get_url:
         url: "{{ execution_genesis_nethermind }}"
         dest: "{{ folder }}/{{ execution_container_name }}/eth-nether-genesis.json"
         mode: "0644"
+        force: true
