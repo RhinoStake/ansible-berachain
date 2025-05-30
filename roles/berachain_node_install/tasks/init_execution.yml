@@ -64,13 +64,16 @@
         dest: "{{ folder }}/{{ execution_container_name }}/eth-genesis.json"
         mode: "0644"
         force: true
+      register: execution_genesis_geth
 
     - name: Stop existing execution container
+      when: execution_genesis_geth.changed
       community.docker.docker_container:
         name: "{{ execution_container_name }}"
         state: absent
 
     - name: Init berachain execution container
+      when: execution_genesis_geth.changed
       community.docker.docker_container:
         name: "{{ execution_container_name }}-init"
         image: "{{ execution_container_image }}:{{ execution_container_version }}"
