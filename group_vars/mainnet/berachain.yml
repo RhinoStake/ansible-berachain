@@ -6,7 +6,7 @@ custom_port_prefix: 254
 
 # Consensus container client & version
 consensus_container_name: bera-beacond
-consensus_version: v1.1.4 # Beacond release version
+consensus_version: v1.2.0 # Beacond release version
 consensus_container_version: "{{ consensus_version }}"
 
 # Consensus Engine Details
@@ -22,7 +22,7 @@ consensus_config_toml: https://raw.githubusercontent.com/berachain/beacon-kit/re
 
 # Execution container client & version
 execution_client: reth # Available options: reth, geth, nethermind
-execution_container_version: 1.1.5
+execution_container_version: 1.3.12
 execution_container_name: bera-{{ execution_client }}
 
 # Execution Engine Details
