@@ -1,7 +1,7 @@
 ---
 # .github/workflows/ansible-lint.yml
 name: ansible-lint
-on:
+"on":
   pull_request:
     branches: ["dev", "main"]
   push:
@@ -12,5 +12,12 @@ jobs:
     runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v4
+
+      - name: YAML Lint
+        uses: ibiqlik/action-yamllint@v3
+        with:
+          file_or_dir: .
+          config_file: .yamllint.yml
+
       - name: Run ansible-lint
         uses: ansible/ansible-lint@main
