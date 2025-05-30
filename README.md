@@ -1,6 +1,6 @@
 # Ansible Playbook for Berachain Node Initialization and Management
 
-[![ansible-lint](https://github.com/RhinoStake/ansible-berachain/actions/workflows/ansible-lint.yml/badge.svg?branch=dev)](https://github.com/RhinoStake/ansible-berachain/actions/workflows/ansible-lint.yml)
+[![ansible-lint](https://github.com/RhinoStake/ansible-berachain/actions/workflows/ansible-lint.yml/badge.svg?branch=main)](https://github.com/RhinoStake/ansible-berachain/actions/workflows/ansible-lint.yml)
 
 Ansible playbook for Berachain Validators and RPCs delivered to bare metal servers. This playbook is intended for node runners who utilize bare metal servers,
 delivering both Beacond and Reth, Geth or Nethermind via Docker.
