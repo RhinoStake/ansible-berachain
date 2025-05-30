@@ -4,9 +4,14 @@ extends: default
 rules:
   line-length:
     max: 160
-  indentation:
-    spaces: 2
-  comments:
-    min-spaces-from-content: 1
   truthy:
     allowed-values: ["true", "false"]
+    check-keys: false
+  comments-indentation: false
+  comments:
+    min-spaces-from-content: 1
+  braces:
+    max-spaces-inside: 1
+  octal-values:
+    forbid-implicit-octal: true
+    forbid-explicit-octal: true
