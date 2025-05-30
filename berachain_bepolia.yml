@@ -1,6 +1,6 @@
 ---
 - name: Berachain Bepolia Install and Init
-  hosts: berachain-testnet
+  hosts: berachain_testnet
   gather_facts: true
   vars_files:
     - "group_vars/testnet/berachain_bepolia.yml"

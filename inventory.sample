@@ -1,7 +1,7 @@
-[berachain-testnet]
+[berachain_testnet]
 server1 ansible_host=x.x.x.x
 server2 ansible_host=x.x.x.x
 
-[berachain-mainnet]
+[berachain_mainnet]
 server3 ansible_host=x.x.x.x
 server4 ansible_host=x.x.x.x

@@ -1,6 +1,6 @@
 ---
 - name: Berachain Mainnet Install and Init
-  hosts: berachain-mainnet
+  hosts: berachain_mainnet
   gather_facts: true
   vars_files:
     - "group_vars/mainnet/berachain.yml"
