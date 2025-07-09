@@ -110,6 +110,8 @@
           - --authrpc.port=8551
           - --authrpc.vhosts=*
           - --authrpc.jwtsecret=/jwtsecret
+          # Recommendation from berachain
+          - --miner.gasprice=1
 
     #
     ## nethermind
