@@ -3,6 +3,7 @@
   hosts: berachain_mainnet
   gather_facts: true
   vars_files:
+    - "group_vars/all.yml"
     - "group_vars/mainnet/berachain.yml"
 
   roles:

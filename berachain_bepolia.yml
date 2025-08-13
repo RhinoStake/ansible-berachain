@@ -3,6 +3,7 @@
   hosts: berachain_testnet
   gather_facts: true
   vars_files:
+    - "group_vars/all.yml"
     - "group_vars/testnet/berachain_bepolia.yml"
 
   roles:
