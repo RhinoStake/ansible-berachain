@@ -1,12 +1,43 @@
 ---
-- name: Initialize beacond
-  ansible.builtin.include_tasks: init_consensus.yml
+# Pre-tasks
+- name: Register public ip
+  ansible.builtin.uri:
+    url: https://ipv4.icanhazip.com/
+    return_content: true
+  register: public_ip
 
-- name: Initialize execution
-  ansible.builtin.include_tasks: init_execution.yml
+- name: Build base folder structure
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: directory
+    mode: "0755"
+  loop:
+    - "{{ folder }}"
+    - "{{ folder }}/{{ consensus_container_name }}"
+    - "{{ folder }}/{{ execution_container_name }}"
 
-- name: Configure node
-  ansible.builtin.include_tasks: configure_node.yml
+- name: Create jwtsecret if it does not exist (Bera requires 0x)
+  ansible.builtin.shell: "set -o pipefail && openssl rand -hex 32 | tr -d '\n' | sed -e 's/^/0x/' > jwtsecret"
+  args:
+    chdir: "{{ folder }}"
+    creates: jwtsecret
+    executable: /bin/bash
 
-- name: Run node
-  ansible.builtin.include_tasks: run_node.yml
+- name: Create a network
+  community.docker.docker_network:
+    name: "{{ network }}_net"
+
+# Initialize, Configure and Run
+- name: Initialize and configure beacond
+  ansible.builtin.include_tasks: consensus_init.yml
+
+- name: Initialize, configure and run execution reth
+  ansible.builtin.include_tasks: execution_reth.yml
+  when: execution_client == "reth"
+
+- name: Initialize, configure and run execution geth
+  ansible.builtin.include_tasks: execution_geth.yml
+  when: execution_client == "geth"
+
+- name: Run beacond
+  ansible.builtin.include_tasks: consensus_run.yml

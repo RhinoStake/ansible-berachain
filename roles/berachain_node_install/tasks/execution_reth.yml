@@ -1,0 +1,95 @@
+---
+# Init and Configure Bera-reth
+
+- name: Retrieve latest eth-genesis.json
+  ansible.builtin.get_url:
+    url: "{{ execution_genesis }}"
+    dest: "{{ folder }}/{{ execution_container_name }}/eth-genesis.json"
+    mode: "0644"
+    force: true
+    checksum: md5:{{ execution_genesis_md5sum }}
+  register: genesis_changed
+
+- name: Identify if execution is initialized
+  ansible.builtin.stat:
+    path: "{{ folder }}/{{ execution_container_name }}/reth.toml"
+  register: execution_initialized
+
+- name: Initialize berachain execution node
+  when: not execution_initialized.stat.exists
+  block:
+    - name: Init berachain execution container
+      community.docker.docker_container:
+        name: "{{ execution_container_name }}-init"
+        image: ghcr.io/berachain/bera-reth:{{ execution_container_version }}
+        state: started
+        pull: true
+        detach: false
+        auto_remove: true
+        cleanup: true
+        volumes:
+          - "{{ folder }}/{{ execution_container_name }}:/data"
+        command: init --datadir=/data --chain=/data/eth-genesis.json
+
+- name: Download EL peers from source
+  ansible.builtin.uri:
+    url: "{{ execution_bootnodes }}"
+    status_code: 200
+    return_content: true
+  register: el_bootnodes
+
+- name: Format EL bootnodes if multiline
+  ansible.builtin.set_fact:
+    el_bootnodes_formatted: "{{ el_bootnodes.content | trim | replace('\n', ',') }}"
+
+- name: Run bera-reth execution container
+  community.docker.docker_container:
+    name: "{{ execution_container_name }}"
+    image: "ghcr.io/berachain/bera-reth:{{ execution_container_version }}"
+    restart_policy: unless-stopped
+    state: started
+    pull: true
+    stop_timeout: 600
+    networks:
+      - name: "{{ network }}_net"
+    ports:
+      # p2p
+      - "{{ custom_port_prefix }}03:{{ custom_port_prefix }}03/tcp"
+      - "{{ custom_port_prefix }}03:{{ custom_port_prefix }}03/udp"
+      # rpc (add additional lines for local network access if necessary)
+      - 127.0.0.1:{{ custom_port_prefix }}45:8545
+      - 127.0.0.1:{{ custom_port_prefix }}46:8546
+    volumes:
+      - "{{ folder }}/{{ execution_container_name }}:/data"
+      - "{{ folder }}/jwtsecret:/jwtsecret:ro"
+      - /etc/localtime:/etc/localtime:ro
+    command:
+      - node
+      - --full
+      - --datadir=/data
+      - --config=/data/reth.toml
+      - --port={{ custom_port_prefix }}03
+      - --discovery.port={{ custom_port_prefix }}03
+      - --nat=extip:{{ public_ip.content | trim }}
+      - --chain=/data/eth-genesis.json
+      - --bootnodes={{ el_bootnodes_formatted }}
+      # RPC & ws
+      - --http
+      - --http.addr=0.0.0.0
+      - --http.port=8545
+      - --http.corsdomain=*
+      - --http.api=eth,net,web3
+      - --ws
+      - --ws.addr=0.0.0.0
+      - --ws.port=8546
+      - --ws.origins=*
+      # Auth to beacond
+      - --authrpc.addr=0.0.0.0
+      - --authrpc.port=8551
+      - --authrpc.jwtsecret=/jwtsecret
+      # Metrics
+      - --metrics=0.0.0.0:6060
+      # Necessary for beacond
+      - --engine.persistence-threshold=0
+      - --engine.memory-block-buffer-target=0
+  register: execution_container

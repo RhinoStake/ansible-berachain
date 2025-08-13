@@ -1,0 +1,91 @@
+---
+# Init and Configure Bera-geth
+
+- name: Retrieve latest eth-genesis.json
+  ansible.builtin.get_url:
+    url: "{{ execution_genesis }}"
+    dest: "{{ folder }}/{{ execution_container_name }}/eth-genesis.json"
+    mode: "0644"
+    force: true
+    checksum: md5:{{ execution_genesis_md5sum }}
+  register: genesis_changed
+
+- name: Identify if execution is initialized
+  ansible.builtin.stat:
+    path: "{{ folder }}/{{ execution_container_name }}/geth/chaindata"
+  register: execution_initialized
+
+- name: Initialize geth
+  when: not execution_initialized.stat.exists or genesis_changed.changed
+  block:
+    - name: Stop existing execution container
+      when: execution_genesis_geth.changed # noqa: no-handler
+      community.docker.docker_container:
+        name: "{{ execution_container_name }}"
+        state: absent
+
+    - name: Init berachain execution container
+      community.docker.docker_container:
+        name: "{{ execution_container_name }}-init"
+        image: "ghcr.io/berachain/bera-geth:{{ execution_container_version }}"
+        state: started
+        pull: true
+        detach: false
+        cleanup: true
+        auto_remove: true
+        volumes:
+          - "{{ folder }}/{{ execution_container_name }}:/data"
+        command:
+          - init
+          - --datadir=/data
+          - --state.scheme=path
+          - --db.engine=pebble
+          - /data/eth-genesis.json
+
+- name: Run berachain geth execution container
+  community.docker.docker_container:
+    name: "{{ execution_container_name }}"
+    image: "ghcr.io/berachain/bera-geth:{{ execution_container_version }}"
+    restart_policy: unless-stopped
+    state: started
+    pull: true
+    stop_timeout: 600
+    networks:
+      - name: "{{ network }}_net"
+    ports:
+      # p2p
+      - "{{ custom_port_prefix }}03:{{ custom_port_prefix }}03/tcp"
+      - "{{ custom_port_prefix }}03:{{ custom_port_prefix }}03/udp"
+      # rpc (add additional lines for local network access if necessary)
+      - 127.0.0.1:{{ custom_port_prefix }}45:8545
+      - 127.0.0.1:{{ custom_port_prefix }}46:8546
+    volumes:
+      - "{{ folder }}/{{ execution_container_name }}:/data"
+      - "{{ folder }}/jwtsecret:/jwtsecret:ro"
+      - /etc/localtime:/etc/localtime:ro
+    command:
+      - --db.engine=pebble
+      - --state.scheme=path
+      - --datadir=/data
+      - --port={{ custom_port_prefix }}03
+      - --discovery.port={{ custom_port_prefix }}03
+      - --nat=extip:{{ public_ip.content | trim }}
+      - --bootnodes={{ execution_bootnodes }}
+      # RPC & ws
+      - --http
+      - --http.addr=0.0.0.0
+      - --http.port=8545
+      - --http.corsdomain=*
+      - --http.api=eth,net,web3
+      - --ws
+      - --ws.addr=0.0.0.0
+      - --ws.port=8546
+      - --ws.origins=*
+      # Auth to beacond
+      - --authrpc.addr=0.0.0.0
+      - --authrpc.port=8551
+      - --authrpc.vhosts=*
+      - --authrpc.jwtsecret=/jwtsecret
+      # Recommendation from berachain
+      - --miner.gasprice=1
+  register: execution_container

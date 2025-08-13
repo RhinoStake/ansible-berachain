@@ -1,0 +1,161 @@
+---
+# Init and Configure Beacond
+
+- name: Identify if beacond is initialized
+  ansible.builtin.stat:
+    path: "{{ folder }}/{{ consensus_container_name }}/config/genesis.json"
+  register: beacond_initialized
+
+- name: Initialize berachain beacond node
+  when: not beacond_initialized.stat.exists
+  block:
+    - name: Initialize berachain beacond node
+      community.docker.docker_container:
+        name: "{{ consensus_container_name }}-init"
+        image: "ghcr.io/berachain/beacon-kit:{{ consensus_container_version }}"
+        state: started
+        detach: false
+        cleanup: true
+        volumes:
+          - "{{ folder }}/{{ consensus_container_name }}:/beacond"
+        env: "{{ {'CHAIN_SPEC': consensus_chain_spec} if consensus_chain_spec is defined else {} }}"
+        command:
+          - init
+          - "{{ network }}"
+          - --chain-id={{ consensus_chain_id }}
+          - --home=/beacond
+
+    - name: Replace genesis.json file
+      become: true
+      ansible.builtin.get_url:
+        url: "{{ consensus_genesis }}"
+        dest: "{{ folder }}/{{ consensus_container_name }}/config/genesis.json"
+        mode: "0644"
+        force: true
+
+    - name: Add kzg trusted setup file
+      become: true
+      ansible.builtin.get_url:
+        url: "{{ consensus_kzg_trusted }}"
+        dest: "{{ folder }}/{{ consensus_container_name }}/kzg-trusted-setup.json"
+        mode: "0644"
+        force: true
+
+- name: Update seeds from url
+  when: consensus_seeds is defined and consensus_seeds | length > 0
+  block:
+    - name: Download CL seeds from source
+      ansible.builtin.uri:
+        url: "{{ consensus_seeds }}"
+        status_code: 200
+        return_content: true
+      register: cl_seeds
+
+    - name: Format CL seeds if multiline
+      ansible.builtin.set_fact:
+        cl_seeds_formatted: "{{ cl_seeds.content | trim | replace('\n', ',') }}"
+
+#
+## Configure beacond
+#
+- name: Download latest config.toml, app.toml and genesis files from source
+  become: true
+  ansible.builtin.get_url:
+    url: "{{ item.src }}"
+    dest: "{{ folder }}/{{ consensus_container_name }}/config/{{ item.dst }}"
+    mode: "0644"
+    force: true
+  loop:
+    - { src: "{{ consensus_config_toml }}", dst: "config.toml" }
+    - { src: "{{ consensus_app_toml }}", dst: "app.toml" }
+    - { src: "{{ consensus_genesis }}", dst: "genesis.json" }
+
+# Configure components:
+- name: Update config.toml and app.toml
+  become: true
+  block:
+    # Configure config.toml components:
+    - name: Update options in config.toml
+      community.general.ini_file:
+        path: "{{ folder }}/{{ consensus_container_name }}/config/config.toml"
+        section: "{{ item.section }}"
+        option: "{{ item.key }}"
+        value: "{{ item.value }}"
+        create: false
+      loop:
+        # No section
+        - section: ""
+          key: "moniker"
+          value: '"{{ network }}"'
+        # P2P
+        - section: "p2p"
+          key: "laddr"
+          value: '"tcp://0.0.0.0:{{ custom_port_prefix }}56"'
+        - section: "p2p"
+          key: "external_address"
+          value: '"{{ public_ip.content | trim }}:{{ custom_port_prefix }}56"'
+        - section: "p2p"
+          key: "persistent_peers"
+          value: '"{{ consensus_persistent_peers | default("") }}"'
+        - section: "p2p"
+          key: "max_num_inbound_peers"
+          value: "23"
+        - section: "p2p"
+          key: "max_num_outbound_peers"
+          value: "13"
+        # RPC
+        - section: "rpc"
+          key: "laddr"
+          value: '"tcp://0.0.0.0:26657"'
+
+    - name: Update seeds in config.toml
+      community.general.ini_file:
+        path: "{{ folder }}/{{ consensus_container_name }}/config/config.toml"
+        section: "p2p"
+        option: "seeds"
+        value: "{{ cl_seeds_formatted }}"
+        create: false
+      when: cl_seeds_formatted is defined and cl_seeds_formatted | length > 0
+
+    # Configure app.toml components:
+    - name: Update options in app.toml
+      community.general.ini_file:
+        path: "{{ folder }}/{{ consensus_container_name }}/config/app.toml"
+        section: "{{ item.section }}"
+        option: "{{ item.key }}"
+        value: "{{ item.value }}"
+        create: false
+      loop:
+        # No section
+        - section: ""
+          key: "pruning"
+          value: '"everything"'
+        # Telemetry
+        - section: "telemetry"
+          key: "prometheus-retention-time"
+          value: '"60"'
+        # Beacon kit
+        - section: "beacon-kit"
+          key: "chain-spec"
+          value: '"{{ consensus_chain_spec | default("mainnet") }}"'
+        - section: "beacon-kit.engine"
+          key: "rpc-dial-url"
+          value: '"http://{{ execution_container_name }}:8551"'
+        - section: "beacon-kit.engine"
+          key: "jwt-secret-path"
+          value: '"/jwtsecret"'
+        - section: "beacon-kit.kzg"
+          key: "trusted-setup-path"
+          value: '"/beacond/kzg-trusted-setup.json"'
+        - section: "beacon-kit.payload-builder"
+          key: "suggested-fee-recipient"
+          value: '"{{ suggested_fee_recipient | default("0x0000000000000000000000000000000000000000") }}"'
+        - section: "beacon-kit.block-store-service"
+          key: "enabled"
+          value: '"false"'
+        - section: "beacon-kit.node-api"
+          key: "enabled"
+          value: '"true"'
+        - section: "beacon-kit.node-api"
+          key: "address"
+          value: '"0.0.0.0:3500"'

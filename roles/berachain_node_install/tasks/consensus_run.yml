@@ -1,0 +1,34 @@
+---
+# If execution container changed, notify handler
+- name: Notify handler if execution container changed
+  ansible.builtin.meta: flush_handlers
+  changed_when: execution_container is changed
+  notify: Wait for execution layer to start
+
+#
+## beacond
+#
+- name: Run berachain beacond container
+  community.docker.docker_container:
+    name: "{{ consensus_container_name }}"
+    image: "ghcr.io/berachain/beacon-kit:{{ consensus_container_version }}"
+    restart_policy: unless-stopped
+    state: started
+    restart: true
+    stop_timeout: 600
+    networks:
+      - name: "{{ network }}_net"
+    ports:
+      # p2p
+      - "{{ custom_port_prefix }}56:{{ custom_port_prefix }}56"
+      # rpc for monitor (add additional lines for local network access if necessary)
+      - "127.0.0.1:{{ custom_port_prefix }}57:26657"
+      # beaconkit.node-api (add additional lines for local network access if necessary)
+      - "127.0.0.1:{{ custom_port_prefix }}30:3500"
+    volumes:
+      - "{{ folder }}/{{ consensus_container_name }}:/beacond"
+      - "{{ folder }}/jwtsecret:/jwtsecret:ro"
+      - /etc/localtime:/etc/localtime:ro
+    command:
+      - start
+      - --home=/beacond

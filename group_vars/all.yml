@@ -1,0 +1,23 @@
+---
+# Berachain Network Consensus (halo) and Execution (reth, geth or nethermind) clients for Berachain Testnet (Bepolia)
+#
+network: berachain
+folder: "/home/{{ ansible_user }}/docker/{{ network }}"
+custom_port_prefix: 254
+
+# Consensus container client & version
+consensus_container_name: bera-beacond
+consensus_container_version: "{{ consensus_version }}"
+
+# Consensus Engine Details
+consensus_genesis: https://raw.githubusercontent.com/berachain/beacon-kit/refs/heads/main/testing/networks/{{ execution_chain_id }}/genesis.json
+consensus_kzg_trusted: https://raw.githubusercontent.com/berachain/beacon-kit/main/testing/networks/{{ execution_chain_id }}/kzg-trusted-setup.json
+consensus_app_toml: https://raw.githubusercontent.com/berachain/beacon-kit/refs/heads/main/testing/networks/{{ execution_chain_id }}/app.toml
+consensus_config_toml: https://raw.githubusercontent.com/berachain/beacon-kit/refs/heads/main/testing/networks/{{ execution_chain_id }}/config.toml
+
+# Execution container client & version
+execution_container_name: bera-{{ execution_client }}
+
+# Execution Engine Details
+execution_genesis: https://raw.githubusercontent.com/berachain/beacon-kit/main/testing/networks/{{ execution_chain_id }}/eth-genesis.json
+execution_bootnodes: https://raw.githubusercontent.com/berachain/beacon-kit/refs/heads/main/testing/networks/{{ execution_chain_id }}/el-peers.txt
