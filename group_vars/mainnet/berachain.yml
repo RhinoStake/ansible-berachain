@@ -2,7 +2,7 @@
 # Berachain Mainnet
 #
 # Consensus container client & version
-consensus_version: v1.3.0 # Beacond release version
+consensus_version: v1.3.1 # Beacond release version
 consensus_chain_id: mainnet-beacon-80094
 
 # Consensus Engine Overrides
@@ -11,7 +11,7 @@ consensus_chain_id: mainnet-beacon-80094
 # suggested_fee_recipient: ""
 
 # Execution container client & version
-execution_container_version: v1.0.0
+execution_container_version: v1.0.1
 execution_client: reth # Available options: reth, geth
 execution_chain_id: 80094
-execution_genesis_md5sum: f3ec1202993b1b69a9c7ad30643856ce
+execution_genesis_md5sum: 51ec047b71b06f7fbca9689037ec1d60
