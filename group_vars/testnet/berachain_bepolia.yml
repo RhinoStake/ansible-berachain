@@ -2,7 +2,7 @@
 # Berachain Bepolia testnet
 #
 # Consensus container client & version
-consensus_version: v1.3.0-rc1 # Beacond release version
+consensus_version: v1.3.1 # Beacond release version
 consensus_chain_id: testnet-beacon-80069
 
 # Consensus Engine Overrides
@@ -11,7 +11,7 @@ consensus_chain_id: testnet-beacon-80069
 # suggested_fee_recipient: ""
 
 # Execution container client & version
-execution_container_version: v1.0.0-rc.8
+execution_container_version: v1.1.0
 execution_client: reth # Available options: reth, geth
 execution_chain_id: 80069
-execution_genesis_md5sum: b659cbef86a6eded371d8e443abf2c0b
+execution_genesis_md5sum: c27c1162af33f7f5401bcef974a64454 # eth-genesis updated 2025.09.15
