@@ -11,7 +11,7 @@ consensus_chain_id: mainnet-beacon-80094
 # suggested_fee_recipient: ""
 
 # Execution container client & version
-execution_container_version: v1.0.1
+execution_container_version: v1.1.0
 execution_client: reth # Available options: reth, geth
 execution_chain_id: 80094
-execution_genesis_md5sum: 51ec047b71b06f7fbca9689037ec1d60
+execution_genesis_md5sum: a401a53f380e3ce49ef358fead5d3b16 # eth-genesis updated 2025.09.15
