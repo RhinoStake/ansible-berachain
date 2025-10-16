@@ -2,7 +2,7 @@
 # Berachain Mainnet
 #
 # Consensus container client & version
-consensus_version: v1.3.1 # Beacond release version
+consensus_version: v1.3.3 # Beacond release version
 consensus_chain_id: mainnet-beacon-80094
 
 # Consensus Engine Overrides
