@@ -2,7 +2,7 @@
 # Berachain Bepolia testnet
 #
 # Consensus container client & version
-consensus_version: v1.3.5 # Beacond release version
+consensus_version: v1.3.6 # Beacond release version
 consensus_chain_id: testnet-beacon-80069
 
 # Consensus Engine Overrides
