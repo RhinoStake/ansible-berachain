@@ -11,7 +11,7 @@ consensus_chain_id: mainnet-beacon-80094
 # suggested_fee_recipient: ""
 
 # Execution container client & version
-execution_container_version: v1.3.2
+execution_container_version: v1.3.3
 execution_client: reth # Available options: reth, geth
 execution_chain_id: 80094
 execution_genesis_md5sum: 6b333924b81a1935e51ac70e7d9d7cb0 # Berachain Balancer Upgrade #2 - 2025-11-07
