@@ -1,15 +1,5 @@
 ---
 # Init and Configure Bera-reth
-
-- name: Retrieve latest eth-genesis.json
-  ansible.builtin.get_url:
-    url: "{{ execution_genesis }}"
-    dest: "{{ folder }}/{{ execution_container_name }}/eth-genesis.json"
-    mode: "0644"
-    force: true
-    checksum: md5:{{ execution_genesis_md5sum }}
-  register: genesis_changed
-
 - name: Identify if execution is initialized
   ansible.builtin.stat:
     path: "{{ folder }}/{{ execution_container_name }}/reth.toml"
@@ -29,18 +19,7 @@
         cleanup: true
         volumes:
           - "{{ folder }}/{{ execution_container_name }}:/data"
-        command: init --datadir=/data --chain=/data/eth-genesis.json
-
-- name: Download EL peers from source
-  ansible.builtin.uri:
-    url: "{{ execution_bootnodes }}"
-    status_code: 200
-    return_content: true
-  register: el_bootnodes
-
-- name: Format EL bootnodes if multiline
-  ansible.builtin.set_fact:
-    el_bootnodes_formatted: "{{ el_bootnodes.content | trim | replace('\n', ',') }}"
+        command: init --datadir=/data --chain={{ execution_chain_name }}
 
 - name: Run bera-reth execution container
   community.docker.docker_container:
@@ -71,8 +50,7 @@
       - --port={{ custom_port_prefix }}03
       - --discovery.port={{ custom_port_prefix }}03
       - --nat=extip:{{ public_ip.content | trim }}
-      - --chain=/data/eth-genesis.json
-      - --bootnodes={{ el_bootnodes_formatted }}
+      - --chain={{ execution_chain_name }}
       # RPC & ws
       - --http
       - --http.addr=0.0.0.0

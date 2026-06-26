@@ -16,8 +16,4 @@ consensus_app_toml: https://raw.githubusercontent.com/berachain/beacon-kit/refs/
 consensus_config_toml: https://raw.githubusercontent.com/berachain/beacon-kit/refs/heads/main/testing/networks/{{ execution_chain_id }}/config.toml
 
 # Execution container client & version
-execution_container_name: bera-{{ execution_client }}
-
-# Execution Engine Details
-execution_genesis: https://raw.githubusercontent.com/berachain/beacon-kit/main/testing/networks/{{ execution_chain_id }}/eth-genesis.json
-execution_bootnodes: https://raw.githubusercontent.com/berachain/beacon-kit/refs/heads/main/testing/networks/{{ execution_chain_id }}/el-peers.txt
+execution_container_name: bera-reth
