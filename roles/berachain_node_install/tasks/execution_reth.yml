@@ -70,4 +70,7 @@
       # Necessary for beacond
       - --engine.persistence-threshold=0
       - --engine.memory-block-buffer-target=0
+      # Add price on sealed transactions
+      - --txpool.nolocals
+      - --txpool.minimum-priority-fee=1000000000
   register: execution_container
