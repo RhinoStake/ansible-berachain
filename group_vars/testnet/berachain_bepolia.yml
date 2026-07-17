@@ -2,7 +2,7 @@
 # Berachain Bepolia testnet
 #
 # Consensus container client & version
-consensus_version: v1.4.1 # Beacond release version
+consensus_version: v1.4.2-rc.0 # Beacond release version - prep for Osaka1 hardfork
 consensus_chain_id: testnet-beacon-80069
 consensus_chain_spec: testnet
 
@@ -12,6 +12,6 @@ consensus_chain_spec: testnet
 # suggested_fee_recipient: ""
 
 # Execution container version
-execution_container_version: v1.4.2
+execution_container_version: v1.4.3-rc.0
 execution_chain_id: 80069
 execution_chain_name: bepolia
