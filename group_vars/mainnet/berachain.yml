@@ -11,6 +11,6 @@ consensus_chain_id: mainnet-beacon-80094
 # suggested_fee_recipient: ""
 
 # Execution container version
-execution_container_version: v1.4.2
+execution_container_version: v1.4.4
 execution_chain_id: 80094
 execution_chain_name: mainnet
