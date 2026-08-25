@@ -33,11 +33,6 @@
 
 - name: Initialize, configure and run execution reth
   ansible.builtin.include_tasks: execution_reth.yml
-  when: execution_client == "reth"
-
-- name: Initialize, configure and run execution geth
-  ansible.builtin.include_tasks: execution_geth.yml
-  when: execution_client == "geth"
 
 - name: Run beacond
   ansible.builtin.include_tasks: consensus_run.yml

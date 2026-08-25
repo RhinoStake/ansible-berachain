@@ -3,14 +3,13 @@
 [![ansible-lint](https://github.com/RhinoStake/ansible-berachain/actions/workflows/ansible-lint.yml/badge.svg?branch=main)](https://github.com/RhinoStake/ansible-berachain/actions/workflows/ansible-lint.yml)
 
 Ansible playbook for Berachain Validators and RPCs delivered to bare metal servers. This playbook is intended for node runners who utilize bare metal servers,
-delivering both Beacond and Reth, Geth or Nethermind via Docker.
+delivering both Beacond and Reth via Docker.
 
 ## This repo features:
 
 - Ability to initialize an Berachain node (validator, rpc) via docker containers, including initing the node, configuring beacond, and running container with
   proper port management.
-- Ability to run reth, geth or nethermind as an execution layer engine. Set `execution_client` in the appropriate vars file as well as included the appropriate
-  execution version.
+- Runs reth as the execution layer engine. Set the appropriate execution version in the vars file.
 - Ability to upgrade to a new versions when requested for planned upgrades.
 - This playbook does not include core server setup, security, monitoring, or power management components necessary for server security and performance. These
   components are the responsibility of the operator.
@@ -31,7 +30,6 @@ delivering both Beacond and Reth, Geth or Nethermind via Docker.
 
 ## How to use this repository
 
-- Set `execution_client` in the appropriate var file (mainnet, testnet). This will default to `reth` if not set.
 - Update `run_node` to add additional port ACLs if the requirement for off-node RPC calls exists.
 - Init'ing a new node: `ansible-playbook berachain_mainnet.yaml --limit nodename-in-inventory`. The nodes are filtered via inventory groups.
 
