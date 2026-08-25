@@ -1,5 +1,5 @@
 ---
-# Berachain Network Consensus (halo) and Execution (reth) clients for Berachain Testnet (Bepolia)
+# Berachain Network Consensus (beacond) and Execution (reth) clients
 #
 network: berachain
 folder: "/home/{{ ansible_user }}/docker/{{ network }}"
